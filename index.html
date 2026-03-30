@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form UX Experiment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {},
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-gray-50 text-gray-900">
+    <div class="mx-auto max-w-3xl px-4 py-10">
+      <header class="mb-8">
+        <h1 class="text-2xl font-semibold">Form UX Experiment</h1>
+        <p class="mt-2 text-sm text-gray-600">
+          You will try the same form twice: once all at once, and once using a stepper.
+        </p>
+      </header>
+
+      <!-- Landing / consent -->
+      <section id="landing" class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+        <h2 class="text-base/7 font-semibold text-gray-900">Before you start</h2>
+        <p class="mt-2 text-sm/6 text-gray-600">
+          This experiment compares two user experiences for the same ~15-field form:
+          <span class="font-medium text-gray-900">all fields at once</span> vs
+          <span class="font-medium text-gray-900">a stepper (grouped categories)</span>.
+        </p>
+        <p class="mt-4 text-sm/6 text-gray-600">
+          After you finish, please complete the questionnaire and share which version felt
+          easier and less tedious.
+        </p>
+
+        <div class="mt-6 rounded-lg bg-gray-50 p-4 ring-1 ring-inset ring-black/5">
+          <h3 class="text-sm/6 font-semibold text-gray-900">Title</h3>
+          <p class="mt-1 text-sm/6 text-gray-700">
+            Evaluating Step-Based vs Single-Page Forms: Impact on User Experience in Web Applications
+          </p>
+
+          <h3 class="mt-4 text-sm/6 font-semibold text-gray-900">Hypothesis</h3>
+          <p class="mt-1 text-sm/6 text-gray-700">
+            I hypothesize that completing the same form with a stepper will improve perceived usability
+            (it will feel less tedious and clearer) compared to entering everything on one page.
+          </p>
+
+          <h3 class="mt-4 text-sm/6 font-semibold text-gray-900">Plan</h3>
+          <p class="mt-1 text-sm/6 text-gray-700">
+            Each participant will complete the form twice in the browser: first the all-at-once version,
+            then the stepper version. After finishing, they will complete a questionnaire and we will
+            analyze which format users preferred and found easier.
+          </p>
+        </div>
+
+        <div class="mt-6 rounded-lg bg-gray-50 p-4 ring-1 ring-inset ring-black/5">
+          <label class="flex items-start gap-3">
+            <input
+              id="consent"
+              type="checkbox"
+              class="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+            />
+            <span class="text-sm/6 text-gray-700">
+              I consent to take part in this experiment <span class="text-red-600">*</span>
+            </span>
+          </label>
+          <div id="consentError" class="mt-3 hidden text-sm text-red-700"></div>
+        </div>
+
+        <div class="mt-6 flex items-center justify-end">
+          <button
+            id="startBtn"
+            type="button"
+            class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            Start
+          </button>
+        </div>
+      </section>
+
+      <!-- Phase confirmation dialog -->
+      <div
+        id="phaseDialog"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="phaseDialogTitle"
+      >
+        <div class="absolute inset-0 bg-gray-900/50" aria-hidden="true"></div>
+        <div class="relative w-full max-w-md rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+          <h2 id="phaseDialogTitle" class="text-base/7 font-semibold text-gray-900">Confirmation</h2>
+          <p id="phaseDialogText" class="mt-2 text-sm/6 text-gray-600"></p>
+          <div class="mt-6 flex justify-end">
+            <button
+              id="phaseDialogOk"
+              type="button"
+              class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              Okay
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM 1: All-in-one -->
+      <section id="section-all" class="hidden rounded-xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h2 class="text-base/7 font-semibold text-gray-900">Form 1: All Fields At Once</h2>
+            <p class="mt-1 text-sm/6 text-gray-600">This is the same information you’ll enter again in the stepper form.</p>
+          </div>
+          <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-200">
+            Step 1
+          </span>
+        </div>
+
+        <form id="form-all" class="mt-6" novalidate>
+          <div class="space-y-8">
+            <div class="border-b border-gray-900/10 pb-8">
+              <h3 class="text-base/7 font-semibold text-gray-900">Profile</h3>
+              <p class="mt-1 text-sm/6 text-gray-600">Use information you’re comfortable sharing.</p>
+
+              <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                <div class="sm:col-span-3">
+                  <label for="username-all" class="block text-sm/6 font-medium text-gray-900">
+                    Username <span class="text-red-600">*</span>
+                  </label>
+                  <div class="mt-2">
+                    <input
+                      id="username-all"
+                      type="text"
+                      name="username"
+                      autocomplete="username"
+                      placeholder="janesmith"
+                      required
+                      class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                  </div>
+                </div>
+
+                <div class="sm:col-span-3">
+                  <label for="job-title-all" class="block text-sm/6 font-medium text-gray-900">
+                    Job title <span class="text-red-600">*</span>
+                  </label>
+                  <div class="mt-2">
+                    <input
+                      id="job-title-all"
+                      type="text"
+                      name="job-title"
+                      placeholder="Software Engineer"
+                      required
+                      class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                  </div>
+                </div>
+
+                <div class="sm:col-span-3">
+                  <label for="website-all" class="block text-sm/6 font-medium text-gray-900">Website (optional)</label>
+                  <div class="mt-2">
+                    <input
+                      id="website-all"
+                      type="url"
+                      name="website"
+                      placeholder="https://example.com"
+                      class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                  </div>
+                </div>
+
+                <div class="col-span-full">
+                  <label for="about-all" class="block text-sm/6 font-medium text-gray-900">Bio/About (optional)</label>
+                  <div class="mt-2">
+                    <textarea
+                      id="about-all"
+                      name="about"
+                      rows="3"
+                      placeholder="A short bio..."
+                      class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-b border-gray-900/10 pb-8">
+              <h3 class="text-base/7 font-semibold text-gray-900">Personal Information</h3>
+              <p class="mt-1 text-sm/6 text-gray-600">Use a permanent address where you can receive mail.</p>
+
+              <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                <div class="sm:col-span-3">
+                  <label for="first-name-all" class="block text-sm/6 font-medium text-gray-900">
+                    First name <span class="text-red-600">*</span>
+                  </label>
+                  <div class="mt-2">
+                    <input
+                      id="first-name-all"
+                      type="text"
+                      name="first-name"
+                      autocomplete="given-name"
+                      required
+                      class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                  </div>
+                </div>
+
+                <div class="sm:col-span-3">
+                  <label for="last-name-all" class="block text-sm/6 font-medium text-gray-900">
+                    Last name <span class="text-red-600">*</span>
+                  </label>
+                  <div class="mt-2">
+                    <input
+                      id="last-name-all"
+                      type="text"
+                      name="last-name"
+                      autocomplete="family-name"
+                      required
+                      class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                  </div>
+                </div>
+
+                <div class="sm:col-span-4">
+                  <label for="email-all" class="block text-sm/6 font-medium text-gray-900">
+                    Email address <span class="text-red-600">*</span>
+                  </label>
+                  <div class="mt-2">
+                    <input
+                      id="email-all"
+                      type="email"
+                      name="email"
+                      autocomplete="email"
+                      required
+                      class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                  </div>
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label for="phone-all" class="block text-sm/6 font-medium text-gray-900">
+                    Phone <span class="text-red-600">*</span>
+                  </label>
+                  <div class="mt-2">
+                    <input
+                      id="phone-all"
+                      type="tel"
+                      name="phone"
+                      autocomplete="tel"
+                      required
+                      inputmode="tel"
+                      placeholder="+1 555 123 4567"
+                      class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                  </div>
+                </div>
+
+                <div class="sm:col-span-3">
+                  <label for="country-all" class="block text-sm/6 font-medium text-gray-900">
+                    Country <span class="text-red-600">*</span>
+                  </label>
+                  <div class="mt-2">
+                    <select
+                      id="country-all"
+                      name="country"
+                      autocomplete="country-name"
+                      required
+                      class="block w-full appearance-none rounded-md bg-white py-2 pl-3 pr-8 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    >
+                      <option value="" selected disabled>Select a country</option>
+                      <option>Cyprus</option>
+                      <option>United States</option>
+                      <option>Greece</option>
+                      <option>United Kingdom</option>
+                      <option>Germany</option>
+                      <option>France</option>
+                      <option>Italy</option>
+                      <option>Spain</option>
+                      <option>Portugal</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-span-full">
+                  <label for="street-address-all" class="block text-sm/6 font-medium text-gray-900">
+                    Street address <span class="text-red-600">*</span>
+                  </label>
+                  <div class="mt-2">
+                    <input
+                      id="street-address-all"
+                      type="text"
+                      name="street-address"
+                      autocomplete="street-address"
+                      required
+                      class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                  </div>
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label for="city-all" class="block text-sm/6 font-medium text-gray-900">
+                    City <span class="text-red-600">*</span>
+                  </label>
+                  <div class="mt-2">
+                    <input
+                      id="city-all"
+                      type="text"
+                      name="city"
+                      autocomplete="address-level2"
+                      required
+                      class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                  </div>
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label for="region-all" class="block text-sm/6 font-medium text-gray-900">
+                    State / Province <span class="text-red-600">*</span>
+                  </label>
+                  <div class="mt-2">
+                    <input
+                      id="region-all"
+                      type="text"
+                      name="region"
+                      autocomplete="address-level1"
+                      required
+                      class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                  </div>
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label for="postal-code-all" class="block text-sm/6 font-medium text-gray-900">
+                    ZIP / Postal code <span class="text-red-600">*</span>
+                  </label>
+                  <div class="mt-2">
+                    <input
+                      id="postal-code-all"
+                      type="text"
+                      name="postal-code"
+                      autocomplete="postal-code"
+                      required
+                      class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pb-2">
+              <h3 class="text-base/7 font-semibold text-gray-900">Preferences</h3>
+              <p class="mt-1 text-sm/6 text-gray-600">How should we contact you?</p>
+
+              <div class="mt-6 space-y-4">
+                <fieldset>
+                  <legend class="text-sm/6 font-semibold text-gray-900">
+                    Preferred contact method <span class="text-red-600">*</span>
+                  </legend>
+                  <div class="mt-4 space-y-3">
+                    <label class="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2 ring-1 ring-inset ring-black/5">
+                      <input id="contact-email-all" type="radio" name="preferred-contact-all" value="email" required class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600" />
+                      <span class="text-sm/6 font-medium text-gray-900">Email</span>
+                    </label>
+                    <label class="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2 ring-1 ring-inset ring-black/5">
+                      <input id="contact-phone-all" type="radio" name="preferred-contact-all" value="phone" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600" />
+                      <span class="text-sm/6 font-medium text-gray-900">Phone</span>
+                    </label>
+                    <label class="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2 ring-1 ring-inset ring-black/5">
+                      <input id="contact-both-all" type="radio" name="preferred-contact-all" value="both" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600" />
+                      <span class="text-sm/6 font-medium text-gray-900">Both</span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <div class="rounded-lg bg-gray-50 p-4 ring-1 ring-inset ring-black/5">
+                  <label class="flex items-start gap-3">
+                    <input
+                      id="terms-all"
+                      type="checkbox"
+                      required
+                      class="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                    />
+                    <span class="text-sm/6 text-gray-700">
+                      I confirm the information I entered is accurate <span class="text-red-600">*</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8 flex items-center justify-end gap-x-6">
+            <button
+              type="button"
+              id="reset-all"
+              class="text-sm/6 font-semibold text-gray-900 hover:text-gray-700"
+            >
+              Reset
+            </button>
+            <button
+              type="submit"
+              class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              Continue to Stepper
+            </button>
+          </div>
+        </form>
+
+        <div id="all-unlock" class="mt-4 hidden rounded-md bg-indigo-50 p-3 text-sm text-indigo-800 ring-1 ring-inset ring-indigo-200">
+          Form 1 completed. You can now fill out Form 2.
+        </div>
+      </section>
+
+      <!-- FORM 2: Stepper -->
+      <section id="section-stepper" class="mt-8 hidden rounded-xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h2 class="text-base/7 font-semibold text-gray-900">Form 2: Stepper</h2>
+            <p class="mt-1 text-sm/6 text-gray-600">The same fields, grouped into categories. Complete one step at a time.</p>
+          </div>
+          <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-200">
+            Step 2
+          </span>
+        </div>
+
+        <form id="form-stepper" class="mt-6" novalidate>
+          <div class="rounded-lg bg-gray-50 p-4 ring-1 ring-inset ring-black/5">
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <span id="stepperBadge" class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white">1</span>
+                <div>
+                  <p class="text-sm font-semibold">Current step</p>
+                  <p id="stepperTitle" class="text-sm text-gray-600">Account</p>
+                </div>
+              </div>
+              <p id="stepperProgressText" class="text-sm text-gray-600">Step 1 of 4</p>
+            </div>
+          </div>
+
+          <div id="stepperError" class="mt-4 hidden rounded-md bg-red-50 p-3 text-sm text-red-700 ring-1 ring-inset ring-red-200" role="alert"></div>
+
+          <div class="mt-6 space-y-6">
+            <!-- Step 1 -->
+            <div class="step-panel" data-step-panel="0">
+              <div class="border-b border-gray-900/10 pb-6">
+                <h3 class="text-base/7 font-semibold text-gray-900">Account</h3>
+                <p class="mt-1 text-sm/6 text-gray-600">Choose your profile details.</p>
+
+                <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                  <div class="sm:col-span-3">
+                    <label for="username-step" class="block text-sm/6 font-medium text-gray-900">
+                      Username <span class="text-red-600">*</span>
+                    </label>
+                    <div class="mt-2">
+                      <input
+                        id="username-step"
+                        type="text"
+                        name="username"
+                        autocomplete="username"
+                        required
+                        placeholder="janesmith"
+                        class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="sm:col-span-3">
+                    <label for="job-title-step" class="block text-sm/6 font-medium text-gray-900">
+                      Job title <span class="text-red-600">*</span>
+                    </label>
+                    <div class="mt-2">
+                      <input
+                        id="job-title-step"
+                        type="text"
+                        name="job-title"
+                        required
+                        placeholder="Software Engineer"
+                        class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="sm:col-span-3">
+                    <label for="website-step" class="block text-sm/6 font-medium text-gray-900">Website (optional)</label>
+                    <div class="mt-2">
+                      <input
+                        id="website-step"
+                        type="url"
+                        name="website"
+                        placeholder="https://example.com"
+                        class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="col-span-full">
+                    <label for="about-step" class="block text-sm/6 font-medium text-gray-900">Bio/About (optional)</label>
+                    <div class="mt-2">
+                      <textarea
+                        id="about-step"
+                        name="about"
+                        rows="3"
+                        placeholder="A short bio..."
+                        class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-panel hidden" data-step-panel="1">
+              <div class="border-b border-gray-900/10 pb-6">
+                <h3 class="text-base/7 font-semibold text-gray-900">Personal</h3>
+                <p class="mt-1 text-sm/6 text-gray-600">Tell us who you are.</p>
+
+                <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                  <div class="sm:col-span-3">
+                    <label for="first-name-step" class="block text-sm/6 font-medium text-gray-900">
+                      First name <span class="text-red-600">*</span>
+                    </label>
+                    <div class="mt-2">
+                      <input
+                        id="first-name-step"
+                        type="text"
+                        name="first-name"
+                        autocomplete="given-name"
+                        required
+                        class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="sm:col-span-3">
+                    <label for="last-name-step" class="block text-sm/6 font-medium text-gray-900">
+                      Last name <span class="text-red-600">*</span>
+                    </label>
+                    <div class="mt-2">
+                      <input
+                        id="last-name-step"
+                        type="text"
+                        name="last-name"
+                        autocomplete="family-name"
+                        required
+                        class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="sm:col-span-4">
+                    <label for="email-step" class="block text-sm/6 font-medium text-gray-900">
+                      Email address <span class="text-red-600">*</span>
+                    </label>
+                    <div class="mt-2">
+                      <input
+                        id="email-step"
+                        type="email"
+                        name="email"
+                        autocomplete="email"
+                        required
+                        class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="sm:col-span-2">
+                    <label for="phone-step" class="block text-sm/6 font-medium text-gray-900">
+                      Phone <span class="text-red-600">*</span>
+                    </label>
+                    <div class="mt-2">
+                      <input
+                        id="phone-step"
+                        type="tel"
+                        name="phone"
+                        autocomplete="tel"
+                        required
+                        inputmode="tel"
+                        placeholder="+1 555 123 4567"
+                        class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-panel hidden" data-step-panel="2">
+              <div class="border-b border-gray-900/10 pb-6">
+                <h3 class="text-base/7 font-semibold text-gray-900">Address</h3>
+                <p class="mt-1 text-sm/6 text-gray-600">Where can we reach you by mail?</p>
+
+                <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                  <div class="sm:col-span-3">
+                    <label for="country-step" class="block text-sm/6 font-medium text-gray-900">
+                      Country <span class="text-red-600">*</span>
+                    </label>
+                    <div class="mt-2">
+                      <select
+                        id="country-step"
+                        name="country"
+                        autocomplete="country-name"
+                        required
+                        class="block w-full appearance-none rounded-md bg-white py-2 pl-3 pr-8 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      >
+                        <option value="" selected disabled>Select a country</option>
+                        <option>Cyprus</option>
+                        <option>United States</option>
+                        <option>Greece</option>
+                        <option>United Kingdom</option>
+                        <option>Germany</option>
+                        <option>France</option>
+                        <option>Italy</option>
+                        <option>Spain</option>
+                        <option>Portugal</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-span-full">
+                    <label for="street-address-step" class="block text-sm/6 font-medium text-gray-900">
+                      Street address <span class="text-red-600">*</span>
+                    </label>
+                    <div class="mt-2">
+                      <input
+                        id="street-address-step"
+                        type="text"
+                        name="street-address"
+                        autocomplete="street-address"
+                        required
+                        class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="sm:col-span-2">
+                    <label for="city-step" class="block text-sm/6 font-medium text-gray-900">
+                      City <span class="text-red-600">*</span>
+                    </label>
+                    <div class="mt-2">
+                      <input
+                        id="city-step"
+                        type="text"
+                        name="city"
+                        autocomplete="address-level2"
+                        required
+                        class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="sm:col-span-2">
+                    <label for="region-step" class="block text-sm/6 font-medium text-gray-900">
+                      State / Province <span class="text-red-600">*</span>
+                    </label>
+                    <div class="mt-2">
+                      <input
+                        id="region-step"
+                        type="text"
+                        name="region"
+                        autocomplete="address-level1"
+                        required
+                        class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="sm:col-span-2">
+                    <label for="postal-code-step" class="block text-sm/6 font-medium text-gray-900">
+                      ZIP / Postal code <span class="text-red-600">*</span>
+                    </label>
+                    <div class="mt-2">
+                      <input
+                        id="postal-code-step"
+                        type="text"
+                        name="postal-code"
+                        autocomplete="postal-code"
+                        required
+                        class="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step-panel hidden" data-step-panel="3">
+              <div class="border-b border-gray-900/10 pb-6">
+                <h3 class="text-base/7 font-semibold text-gray-900">Preferences</h3>
+                <p class="mt-1 text-sm/6 text-gray-600">Final choices before submitting.</p>
+
+                <div class="mt-6 space-y-4">
+                  <fieldset>
+                    <legend class="text-sm/6 font-semibold text-gray-900">
+                      Preferred contact method <span class="text-red-600">*</span>
+                    </legend>
+                    <div class="mt-4 space-y-3">
+                      <label class="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2 ring-1 ring-inset ring-black/5" id="preferred-contact-wrap-step">
+                        <input id="contact-email-step" type="radio" name="preferred-contact-step" value="email" required class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600" />
+                        <span class="text-sm/6 font-medium text-gray-900">Email</span>
+                      </label>
+                      <label class="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2 ring-1 ring-inset ring-black/5">
+                        <input id="contact-phone-step" type="radio" name="preferred-contact-step" value="phone" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600" />
+                        <span class="text-sm/6 font-medium text-gray-900">Phone</span>
+                      </label>
+                      <label class="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2 ring-1 ring-inset ring-black/5">
+                        <input id="contact-both-step" type="radio" name="preferred-contact-step" value="both" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600" />
+                        <span class="text-sm/6 font-medium text-gray-900">Both</span>
+                      </label>
+                    </div>
+                  </fieldset>
+
+                  <div class="rounded-lg bg-gray-50 p-4 ring-1 ring-inset ring-black/5">
+                    <label class="flex items-start gap-3">
+                      <input
+                        id="terms-step"
+                        type="checkbox"
+                        required
+                        class="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <span class="text-sm/6 text-gray-700">
+                        I confirm the information I entered is accurate <span class="text-red-600">*</span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8 flex items-center justify-between gap-x-6">
+            <button
+              type="button"
+              id="step-back"
+              class="rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            >
+              Back
+            </button>
+            <div class="flex items-center gap-x-6">
+              <button
+                type="button"
+                id="reset-stepper"
+                class="text-sm/6 font-semibold text-gray-900 hover:text-gray-700"
+              >
+                Reset
+              </button>
+              <button
+                type="submit"
+                id="step-next"
+                class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div id="stepper-done" class="mt-6 hidden rounded-md bg-indigo-50 p-4 text-sm text-indigo-800 ring-1 ring-inset ring-indigo-200">
+          Form 2 completed. Please complete the questionnaire below.
+          <div class="mt-3 text-sm text-indigo-900/80">
+            Before you submit, quickly think about which version felt better (easier, faster, or less tedious),
+            and why.
+          </div>
+          <div class="mt-4">
+            <a
+              id="questionnaireLink"
+              href="#"
+              target="_blank"
+              rel="noreferrer"
+              class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+            >
+              Open questionnaire
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <footer class="mt-10 text-xs text-gray-500">
+        For the experiment, no data is sent anywhere.
+      </footer>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+

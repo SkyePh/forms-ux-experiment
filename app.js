@@ -1,5 +1,5 @@
 (() => {
-  const QUESTIONNAIRE_URL = "https://example.com/questionnaire";
+  const QUESTIONNAIRE_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeHG_YqT1OB6zaiQ-0ewnmAbx4rXTUwBHtlivP2wDT21sHYQQ/viewform?usp=publish-editor";
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
